@@ -1,20 +1,27 @@
 package api
 
 import (
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/kilo40/idea-forge/internal/llm"
+	"github.com/kilo40/idea-forge/internal/search"
+	"github.com/kilo40/idea-forge/internal/storage"
 )
 
-// Server represents the API server
+// Server represents the API server with all dependencies
 type Server struct {
-	router *gin.Engine
-	// TODO: Add dependencies (db, llm client, search client)
+	router   *gin.Engine
+	db       *storage.Database
+	llm      *llm.Client
+	search   *search.Client
+	obsidian *storage.ObsidianWriter
 }
 
-// NewServer creates a new API server instance
+// NewServer creates a new API server instance with all dependencies
 func NewServer() *Server {
 	router := gin.Default()
 
@@ -30,6 +37,31 @@ func NewServer() *Server {
 
 	s := &Server{
 		router: router,
+	}
+
+	// Initialize dependencies (log errors but don't fail - allows partial functionality)
+	if db, err := storage.NewDatabase(); err != nil {
+		log.Printf("Warning: Database initialization failed: %v", err)
+	} else {
+		s.db = db
+	}
+
+	if llmClient, err := llm.NewClient(); err != nil {
+		log.Printf("Warning: LLM client initialization failed: %v", err)
+	} else {
+		s.llm = llmClient
+	}
+
+	if searchClient, err := search.NewClient(); err != nil {
+		log.Printf("Warning: Search client initialization failed: %v", err)
+	} else {
+		s.search = searchClient
+	}
+
+	if obsidianWriter, err := storage.NewObsidianWriter(); err != nil {
+		log.Printf("Warning: Obsidian writer initialization failed: %v", err)
+	} else {
+		s.obsidian = obsidianWriter
 	}
 
 	s.setupRoutes()
@@ -61,9 +93,20 @@ func (s *Server) Run(addr string) error {
 
 // healthCheck returns server health status
 func (s *Server) healthCheck(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
+	status := gin.H{
 		"status":  "healthy",
 		"service": "idea-forge",
 		"time":    time.Now().UTC().Format(time.RFC3339),
-	})
+	}
+
+	// Add component status
+	components := gin.H{
+		"database": s.db != nil,
+		"llm":      s.llm != nil,
+		"search":   s.search != nil,
+		"obsidian": s.obsidian != nil,
+	}
+	status["components"] = components
+
+	c.JSON(http.StatusOK, status)
 }

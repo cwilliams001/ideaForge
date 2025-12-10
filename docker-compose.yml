@@ -1,3 +1,12 @@
+# Production docker-compose for Idea Forge
+#
+# Usage:
+#   1. Copy .env.example to .env and configure
+#   2. Set OBSIDIAN_VAULT_PATH to your Syncthing-synced Obsidian vault
+#      Example: /home/ansible/syncthing/sync/Obsidian
+#   3. Run: docker compose up -d
+#   4. With SearXNG: docker compose --profile search up -d
+
 services:
   frontend:
     build:
@@ -23,18 +32,21 @@ services:
       - PORT=8080
       - DATABASE_PATH=/app/data/ideaforge.db
       - OBSIDIAN_VAULT_PATH=/obsidian
-      - OBSIDIAN_FOLDER=IdeaForge
+      - OBSIDIAN_FOLDER=${OBSIDIAN_FOLDER:-IdeaForge}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - LLM_MODEL=${LLM_MODEL:-claude-sonnet-4-20250514}
       - SEARXNG_URL=${SEARXNG_URL:-http://searxng:8080}
     volumes:
       - backend-data:/app/data
-      - ${OBSIDIAN_VAULT_PATH:-./obsidian-vault}:/obsidian
+      # Mount your Obsidian vault - Syncthing will sync changes to other devices
+      # Example: /home/ansible/syncthing/sync/Obsidian:/obsidian
+      - ${OBSIDIAN_VAULT_PATH}:/obsidian
     restart: unless-stopped
     networks:
       - ideaforge
 
-  # Optional: Self-hosted SearXNG for search
+  # Optional: Self-hosted SearXNG for link discovery
+  # Start with: docker compose --profile search up -d
   searxng:
     image: searxng/searxng:latest
     ports:
@@ -47,7 +59,7 @@ services:
     networks:
       - ideaforge
     profiles:
-      - search  # Only start if explicitly requested
+      - search
 
 volumes:
   backend-data:
