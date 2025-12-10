@@ -1,0 +1,6 @@
+tmp
+data
+*.db
+.git
+*.log
+.env*

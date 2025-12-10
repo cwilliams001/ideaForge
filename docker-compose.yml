@@ -1,0 +1,58 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8080
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - ideaforge
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - DATABASE_PATH=/app/data/ideaforge.db
+      - OBSIDIAN_VAULT_PATH=/obsidian
+      - OBSIDIAN_FOLDER=IdeaForge
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - LLM_MODEL=${LLM_MODEL:-claude-sonnet-4-20250514}
+      - SEARXNG_URL=${SEARXNG_URL:-http://searxng:8080}
+    volumes:
+      - backend-data:/app/data
+      - ${OBSIDIAN_VAULT_PATH:-./obsidian-vault}:/obsidian
+    restart: unless-stopped
+    networks:
+      - ideaforge
+
+  # Optional: Self-hosted SearXNG for search
+  searxng:
+    image: searxng/searxng:latest
+    ports:
+      - "8888:8080"
+    volumes:
+      - searxng-data:/etc/searxng
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8888/
+    restart: unless-stopped
+    networks:
+      - ideaforge
+    profiles:
+      - search  # Only start if explicitly requested
+
+volumes:
+  backend-data:
+  searxng-data:
+
+networks:
+  ideaforge:
+    driver: bridge

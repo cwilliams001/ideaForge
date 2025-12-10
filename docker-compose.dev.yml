@@ -1,0 +1,31 @@
+# Development docker-compose with hot reloading
+# Using host network to work around Docker networking issues
+services:
+  frontend:
+    image: idea-forge-frontend:dev
+    network_mode: host
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+
+  backend:
+    image: idea-forge-backend:dev
+    network_mode: host
+    environment:
+      - PORT=8080
+      - DATABASE_PATH=/app/data/ideaforge.db
+      - OBSIDIAN_VAULT_PATH=/obsidian
+      - OBSIDIAN_FOLDER=IdeaForge
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - LLM_MODEL=${LLM_MODEL:-claude-sonnet-4-20250514}
+      - SEARXNG_URL=${SEARXNG_URL:-http://localhost:8888}
+    volumes:
+      - ./backend:/app
+      - backend-data:/app/data
+      - ${OBSIDIAN_VAULT_PATH:-./test-vault}:/obsidian
+
+volumes:
+  backend-data:
