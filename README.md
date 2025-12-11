@@ -10,16 +10,14 @@ A PWA that transforms quick notes/ideas into structured markdown todos with cont
    # Edit .env with your API keys and paths
    ```
 
-2. Start with Docker Compose:
-   ```bash
-   # Production
-   docker compose up -d
+2. Get a Tailscale auth key from your [admin console](https://login.tailscale.com/admin/settings/keys) and add it to `.env`
 
-   # Development (with hot reload)
-   docker compose -f docker-compose.dev.yml up
+3. Start with Docker Compose:
+   ```bash
+   docker compose up -d
    ```
 
-3. Access at `http://localhost:3000`
+4. Access via Tailscale at `https://ts-ideaforge.<your-tailnet>.ts.net`
 
 ## Features
 
