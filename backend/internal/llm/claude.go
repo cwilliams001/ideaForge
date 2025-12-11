@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/kilo40/idea-forge/internal/models"
@@ -148,8 +149,11 @@ func (c *Client) ExpandNote(ctx context.Context, note string) (*models.LLMRespon
 		return nil, fmt.Errorf("unexpected response format")
 	}
 
+	// Clean the response text (LLMs sometimes wrap JSON in markdown code blocks)
+	responseText := cleanJSONResponse(apiResp.Content[0].Text)
+
 	var llmResponse models.LLMResponse
-	if err := json.Unmarshal([]byte(apiResp.Content[0].Text), &llmResponse); err != nil {
+	if err := json.Unmarshal([]byte(responseText), &llmResponse); err != nil {
 		return nil, fmt.Errorf("failed to parse LLM response as JSON: %w", err)
 	}
 
@@ -159,4 +163,23 @@ func (c *Client) ExpandNote(ctx context.Context, note string) (*models.LLMRespon
 	}
 
 	return &llmResponse, nil
+}
+
+// cleanJSONResponse strips markdown code blocks from LLM responses
+func cleanJSONResponse(text string) string {
+	text = strings.TrimSpace(text)
+
+	// Remove ```json or ``` prefix
+	if strings.HasPrefix(text, "```json") {
+		text = strings.TrimPrefix(text, "```json")
+	} else if strings.HasPrefix(text, "```") {
+		text = strings.TrimPrefix(text, "```")
+	}
+
+	// Remove trailing ```
+	if strings.HasSuffix(text, "```") {
+		text = strings.TrimSuffix(text, "```")
+	}
+
+	return strings.TrimSpace(text)
 }
