@@ -54,7 +54,7 @@ func (s *Server) createNote(c *gin.Context) {
 	}
 
 	// Step 2: Search for relevant links (optional - don't fail if search unavailable)
-	var links []models.Link
+	links := make([]models.Link, 0) // Initialize as empty slice, not nil (nil serializes to null in JSON)
 	if s.search != nil {
 		log.Printf("Searching for links: %s", llmResponse.Title)
 		searchLinks, err := s.search.SearchForLinks(ctx, llmResponse.Title)
