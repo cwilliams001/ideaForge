@@ -40,7 +40,8 @@ services:
       - ts-ideaforge
       - backend
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8080
+      # Use empty string for relative URLs - Tailscale proxies /api/* to backend
+      - NEXT_PUBLIC_API_URL=
     restart: unless-stopped
 
   # Backend - Go API

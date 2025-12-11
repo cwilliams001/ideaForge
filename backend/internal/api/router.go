@@ -26,8 +26,11 @@ func NewServer() *Server {
 	router := gin.Default()
 
 	// Configure CORS for frontend
+	// Allow all origins since this runs on a private Tailscale network (no public access)
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "http://127.0.0.1:3000"},
+		AllowOriginFunc: func(origin string) bool {
+			return true // Allow all origins on trusted private network
+		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
