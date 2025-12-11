@@ -73,20 +73,24 @@ func NewServer() *Server {
 
 // setupRoutes configures all API routes
 func (s *Server) setupRoutes() {
+	// Routes under /api prefix (for local development and direct access)
 	api := s.router.Group("/api")
 	{
-		// Health check
 		api.GET("/health", s.healthCheck)
-
-		// Notes endpoints
 		api.POST("/notes", s.createNote)
 		api.GET("/notes", s.listNotes)
 		api.GET("/notes/:id", s.getNote)
 		api.DELETE("/notes/:id", s.deleteNote)
-
-		// Categories endpoint
 		api.GET("/categories", s.listCategories)
 	}
+
+	// Same routes at root level (for Tailscale serve which strips /api/ prefix)
+	s.router.GET("/health", s.healthCheck)
+	s.router.POST("/notes", s.createNote)
+	s.router.GET("/notes", s.listNotes)
+	s.router.GET("/notes/:id", s.getNote)
+	s.router.DELETE("/notes/:id", s.deleteNote)
+	s.router.GET("/categories", s.listCategories)
 }
 
 // Run starts the HTTP server
