@@ -30,6 +30,8 @@ services:
     restart: unless-stopped
 
   # Frontend - Next.js PWA
+  # Note: NEXT_PUBLIC_API_URL is set to empty string at build time in Dockerfile
+  # This makes the frontend use relative URLs, which Tailscale proxies to backend
   frontend:
     build:
       context: ./frontend
@@ -39,9 +41,6 @@ services:
     depends_on:
       - ts-ideaforge
       - backend
-    environment:
-      # Use empty string for relative URLs - Tailscale proxies /api/* to backend
-      - NEXT_PUBLIC_API_URL=
     restart: unless-stopped
 
   # Backend - Go API

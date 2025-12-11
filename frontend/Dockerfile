@@ -12,7 +12,11 @@ RUN npm ci
 # Copy source
 COPY . .
 
-# Build
+# Build arg for API URL (empty string for Tailscale relative URLs)
+ARG NEXT_PUBLIC_API_URL=""
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
+# Build with the env var available
 RUN npm run build
 
 # Runtime stage
