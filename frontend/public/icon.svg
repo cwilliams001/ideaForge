@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#0a0a0f"/>
+  <!-- Anvil simplified -->
+  <path d="M100 340 L140 300 L372 300 L412 340 L412 380 L100 380 Z" fill="#2a2a3a" stroke="#00ff88" stroke-width="6"/>
+  <path d="M140 300 L160 260 L352 260 L372 300 Z" fill="#1a1a2a" stroke="#00ff88" stroke-width="4"/>
+  <path d="M160 260 L80 240 L80 260 L140 280 Z" fill="#1a1a2a" stroke="#00ff88" stroke-width="4"/>
+  <!-- Lightning bolt / spark -->
+  <path d="M256 70 L220 165 L275 165 L230 260 L320 145 L260 145 L300 70 Z" fill="#00ff88"/>
+  <!-- Accent sparks -->
+  <circle cx="175" cy="180" r="12" fill="#00d4ff"/>
+  <circle cx="345" cy="155" r="10" fill="#ff00ff"/>
+  <circle cx="195" cy="225" r="8" fill="#00ff88"/>
+</svg>
