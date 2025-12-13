@@ -48,7 +48,12 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        USER_UID: ${PUID:-1000}
+        USER_GID: ${PGID:-1000}
+        USERNAME: ${DOCKER_USER:-ct}
     container_name: ideaforge-backend
+    user: "${PUID:-1000}:${PGID:-1000}"
     network_mode: service:ts-ideaforge
     depends_on:
       - ts-ideaforge

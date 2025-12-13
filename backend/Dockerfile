@@ -24,11 +24,24 @@ WORKDIR /app
 # Install runtime dependencies
 RUN apk add --no-cache ca-certificates sqlite-libs
 
-# Copy binary from builder
-COPY --from=builder /app/server /app/server
+# Build args for user configuration (defaults match common Linux users)
+ARG USER_UID=1000
+ARG USER_GID=1000
+ARG USERNAME=ct
 
-# Create data directory
-RUN mkdir -p /app/data
+# Create non-root user and group
+RUN addgroup --system --gid ${USER_GID} ${USERNAME} && \
+    adduser --system --uid ${USER_UID} --ingroup ${USERNAME} ${USERNAME}
+
+# Create data directory with proper ownership
+RUN mkdir -p /app/data && \
+    chown -R ${USERNAME}:${USERNAME} /app/data
+
+# Copy binary from builder with proper ownership
+COPY --from=builder --chown=${USERNAME}:${USERNAME} /app/server /app/server
+
+# Switch to non-root user
+USER ${USERNAME}
 
 # Expose port
 EXPOSE 8080

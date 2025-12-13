@@ -44,6 +44,11 @@ export default function Home() {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    await api.deleteNote(id);
+    setNotes((prev) => prev.filter((note) => note.id !== id));
+  };
+
   return (
     <main className="min-h-screen">
       {/* Header */}
@@ -133,7 +138,13 @@ export default function Home() {
               </CardContent>
             </Card>
           ) : (
-            notes.map((note) => <NoteCard key={note.id} note={note} />)
+            notes.map((note) => (
+              <NoteCard
+                key={note.id}
+                note={note}
+                onDelete={handleDelete}
+              />
+            ))
           )}
         </section>
       </div>

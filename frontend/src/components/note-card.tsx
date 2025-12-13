@@ -3,6 +3,8 @@
 import * as React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { DeleteConfirmModal } from "@/components/delete-confirm-modal";
 import { cn } from "@/lib/utils";
 
 interface Link {
@@ -26,6 +28,7 @@ interface ProcessedNote {
 interface NoteCardProps {
   note: ProcessedNote;
   className?: string;
+  onDelete?: (id: string) => Promise<void>;
 }
 
 const linkTypeIcons: Record<string, string> = {
@@ -35,7 +38,11 @@ const linkTypeIcons: Record<string, string> = {
   article: "[ ART ]",
 };
 
-export function NoteCard({ note, className }: NoteCardProps) {
+export function NoteCard({ note, className, onDelete }: NoteCardProps) {
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = React.useState(false);
+
   const formattedDate = new Date(note.created_at).toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
@@ -44,14 +51,46 @@ export function NoteCard({ note, className }: NoteCardProps) {
     minute: "2-digit",
   });
 
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!onDelete) return;
+
+    setIsDeleting(true);
+    setError(null);
+
+    try {
+      await onDelete(note.id);
+      setShowDeleteModal(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete note");
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <Card variant="terminal" hoverEffect className={cn("pt-8", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-4">
           <CardTitle className="text-lg">{note.title}</CardTitle>
-          <Badge variant={note.category as "homelab" | "coding" | "personal" | "learning" | "creative"}>
-            {note.category}
-          </Badge>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Badge variant={note.category as "homelab" | "coding" | "personal" | "learning" | "creative"}>
+              {note.category}
+            </Badge>
+            {onDelete && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDeleteClick}
+                disabled={isDeleting}
+                className="uppercase"
+              >
+                {isDeleting ? "..." : "[ X ]"}
+              </Button>
+            )}
+          </div>
         </div>
         <p className="text-xs text-muted-foreground font-mono mt-1">
           {formattedDate}
@@ -59,6 +98,11 @@ export function NoteCard({ note, className }: NoteCardProps) {
             <span className="text-accent ml-2">[ synced ]</span>
           )}
         </p>
+        {error && (
+          <p className="text-xs text-destructive font-mono mt-2">
+            [ ERROR ] {error}
+          </p>
+        )}
       </CardHeader>
 
       <CardContent className="space-y-4">
@@ -109,6 +153,17 @@ export function NoteCard({ note, className }: NoteCardProps) {
           </div>
         )}
       </CardContent>
+
+      {onDelete && (
+        <DeleteConfirmModal
+          open={showDeleteModal}
+          onOpenChange={setShowDeleteModal}
+          onConfirm={handleDeleteConfirm}
+          title={note.title}
+          category={note.category}
+          isDeleting={isDeleting}
+        />
+      )}
     </Card>
   );
 }
