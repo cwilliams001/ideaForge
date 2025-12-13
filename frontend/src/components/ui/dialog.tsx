@@ -38,9 +38,7 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
   );
 }
 
-interface DialogContentProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-export function DialogContent({ className, children, ...props }: DialogContentProps) {
+export function DialogContent({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(

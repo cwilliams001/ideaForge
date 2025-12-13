@@ -15,12 +15,7 @@ export default function Home() {
 
   const categories = ["homelab", "coding", "personal", "learning", "creative"];
 
-  // Load notes on mount
-  React.useEffect(() => {
-    loadNotes();
-  }, [selectedCategory]);
-
-  const loadNotes = async () => {
+  const loadNotes = React.useCallback(async () => {
     try {
       const response = await api.getNotes(selectedCategory || undefined);
       setNotes(response.notes || []);
@@ -28,7 +23,12 @@ export default function Home() {
       // API not available yet - that's fine for dev
       console.log("API not available");
     }
-  };
+  }, [selectedCategory]);
+
+  // Load notes on mount and when category changes
+  React.useEffect(() => {
+    loadNotes();
+  }, [loadNotes]);
 
   const handleSubmit = async (content: string) => {
     setIsLoading(true);
